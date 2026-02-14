@@ -70,7 +70,7 @@ if st.button("✨ 返信案を生成する", type="primary"):
             # Gemini APIの呼び出し
             genai.configure(api_key=api_key)
             # 先ほど成功したモデル名を指定
-            model = genai.GenerativeModel('models/gemini-1.5-flash')
+            model = genai.GenerativeModel('models/gemini-2.5-flash-lite')
             
             with st.spinner("AIが良子先生の返信を考えています..."):
                 response = model.generate_content(prompt)
@@ -80,3 +80,4 @@ if st.button("✨ 返信案を生成する", type="primary"):
             
         except Exception as e:
             st.error(f"エラーが発生しました: {e}")
+
