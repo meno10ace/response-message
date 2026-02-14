@@ -6,11 +6,13 @@ st.set_page_config(page_title="良子先生のAI秘書", page_icon="👩‍🏫"
 st.title("👩‍🏫 良子先生のAI秘書（返信作成くん）")
 st.write("保護者からのLINEやメールを貼り付けて、返信の方向性を選ぶだけでAIが下書きを作成します。")
 
-# --- APIキーの入力（サイドバーに配置） ---
-with st.sidebar:
-    st.header("⚙️ 設定")
-    api_key = st.text_input("Gemini APIキーを入力", type="password")
-    st.caption("※Google AI Studioで取得したAPIキーを入力してください。")
+# --- APIキーの取得（Streamlit Secretsから裏で安全に読み込む） ---
+try:
+    # SecretsからAPIキーを取得し、念のため前後の見えない空白を削除
+    api_key = st.secrets["GEMINI_API_KEY"].strip()
+except KeyError:
+    st.error("APIキーが設定されていません。Streamlit Cloudの「Secrets」設定を確認してください。")
+    st.stop() # キーがない場合はここで処理を止めて画面を表示しない
 
 # --- メイン画面の入力エリア ---
 parent_message = st.text_area("📥 保護者からのメッセージを貼り付けてください", height=150, placeholder="例：いつもお世話になっております。本日のレッスンですが、少し遅れて到着しそうです...")
@@ -31,9 +33,7 @@ custom_intent = st.text_input("✏️ その他、追加で伝えたいこと（
 
 # --- 生成ボタンとAIの処理 ---
 if st.button("✨ 返信案を生成する", type="primary"):
-    if not api_key:
-        st.warning("👈 サイドバーにGemini APIキーを入力してください。")
-    elif not parent_message:
+    if not parent_message:
         st.warning("保護者からのメッセージを入力してください。")
     else:
         # 選択されたチェックボックスから「方向性」のリストを作る
@@ -69,7 +69,8 @@ if st.button("✨ 返信案を生成する", type="primary"):
         try:
             # Gemini APIの呼び出し
             genai.configure(api_key=api_key)
-            model = genai.GenerativeModel('models/gemini-2.5-flash-lite')
+            # 先ほど成功したモデル名を指定
+            model = genai.GenerativeModel('models/gemini-1.5-flash')
             
             with st.spinner("AIが良子先生の返信を考えています..."):
                 response = model.generate_content(prompt)
